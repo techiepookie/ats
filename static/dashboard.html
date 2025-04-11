@@ -1,0 +1,546 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Results Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-header {
+            font-weight: 600;
+            background-color: #f0f3f7;
+            padding: 15px 20px;
+        }
+        .score-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .score-label {
+            flex: 1;
+            font-weight: 500;
+        }
+        .score-bar-container {
+            flex: 3;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 15px;
+        }
+        .score-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            border-radius: 10px;
+        }
+        .score-value {
+            flex: 0 0 50px;
+            text-align: right;
+            font-weight: 600;
+        }
+        .overall-score {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+            color: #4e54c8;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        .page-header {
+            background-color: #4e54c8;
+            color: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .nav-pill {
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #e9ecef;
+            border-radius: 30px;
+            margin-right: 10px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .nav-pill:hover, .nav-pill.active {
+            background-color: #4e54c8;
+            color: white;
+            text-decoration: none;
+        }
+        .dual-metrics {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .dual-metric-item {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .dual-metric-item:last-child {
+            margin-right: 0;
+        }
+        .dual-metric-label {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .dual-metrics-container {
+            display: flex;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .dual-metric-bar {
+            height: 100%;
+        }
+        .dual-metric-bar:first-child {
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+        }
+        .dual-metric-bar:last-child {
+            background: linear-gradient(90deg, #ff9a9e, #fad0c4);
+        }
+        .dual-metric-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="page-header">
+            <h1>Interview Results Dashboard</h1>
+            <p>Comprehensive analysis of your interview performance and job compatibility</p>
+            <div class="mt-3">
+                <a href="/" class="nav-pill">Back to Interview</a>
+                <a href="#interview-performance" class="nav-pill active">Interview Performance</a>
+                <a href="#job-compatibility" class="nav-pill">Job Compatibility</a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Overall Interview Performance</div>
+                    <div class="card-body">
+                        <div class="overall-score" id="overall-interview-score">Loading...</div>
+                        <div id="interview-performance"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Overall Job Compatibility</div>
+                    <div class="card-body">
+                        <div class="overall-score" id="overall-compatibility-score">Loading...</div>
+                        <div id="job-compatibility-overview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">Professional Competencies</div>
+            <div class="card-body">
+                <div id="professional-competencies"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Work Style & Ethics</div>
+            <div class="card-body">
+                <div id="work-style"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Personality Compatibility</div>
+            <div class="card-body">
+                <div id="personality-compatibility"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Career Growth</div>
+            <div class="card-body">
+                <div id="career-growth"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Stress Management</div>
+            <div class="card-body">
+                <div id="stress-management"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Cultural Fit</div>
+            <div class="card-body">
+                <div id="cultural-fit"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch the results JSON
+            fetch('interview_results.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('No interview results found. Please complete an interview first.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayResults(data);
+                })
+                .catch(error => {
+                    console.error('Error loading interview results:', error);
+                    document.querySelector('.dashboard-container').innerHTML = `
+                        <div class="alert alert-warning">
+                            <h4>No interview results found</h4>
+                            <p>${error.message}</p>
+                            <a href="/" class="btn btn-primary mt-3">Return to Interview</a>
+                        </div>
+                    `;
+                });
+        });
+
+        function displayResults(data) {
+            // Display overall scores
+            const interviewScore = data.interview_performance.average_score || 0;
+            const compatibilityScore = data.job_compatibility.average_score || 0;
+            
+            document.getElementById('overall-interview-score').textContent = `${interviewScore.toFixed(1)}%`;
+            document.getElementById('overall-compatibility-score').textContent = `${compatibilityScore.toFixed(1)}%`;
+            
+            // Display interview performance metrics
+            const interviewPerformanceContainer = document.getElementById('interview-performance');
+            const interviewMetrics = ['pace', 'tone', 'clarity', 'empathy', 'relevancy', 'sentiment', 'confidence', 'completeness'];
+            
+            interviewMetrics.forEach(metric => {
+                if (data.interview_performance[metric]) {
+                    const score = data.interview_performance[metric].score || 0;
+                    const description = data.interview_performance[metric].description || metric;
+                    
+                    interviewPerformanceContainer.innerHTML += createScoreBar(metric, description, score);
+                }
+            });
+            
+            // Display job compatibility overview
+            const jobCompatibilityContainer = document.getElementById('job-compatibility-overview');
+            const compatibilityCategories = [
+                'professional_competencies',
+                'work_style_ethics',
+                'personality_compatibility',
+                'career_growth',
+                'stress_management',
+                'cultural_fit'
+            ];
+            
+            compatibilityCategories.forEach(category => {
+                if (data.job_compatibility[category]) {
+                    const score = data.job_compatibility[category].overall || 0;
+                    const displayName = category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    jobCompatibilityContainer.innerHTML += createScoreBar(category, displayName, score);
+                }
+            });
+            
+            // Display detailed professional competencies
+            displayProfessionalCompetencies(data.job_compatibility.professional_competencies);
+            
+            // Display work style metrics with dual bars
+            displayWorkStyle(data.job_compatibility.work_style_ethics);
+            
+            // Display personality compatibility with dual bars
+            displayPersonalityCompatibility(data.job_compatibility.personality_compatibility);
+            
+            // Display career growth metrics
+            displayCareerGrowth(data.job_compatibility.career_growth);
+            
+            // Display stress management metrics
+            displayStressManagement(data.job_compatibility.stress_management);
+            
+            // Display cultural fit metrics
+            displayCulturalFit(data.job_compatibility.cultural_fit);
+        }
+
+        function createScoreBar(id, label, score) {
+            return `
+                <div class="score-container">
+                    <div class="score-label">${label}</div>
+                    <div class="score-bar-container">
+                        <div class="score-bar" style="width: ${score}%"></div>
+                    </div>
+                    <div class="score-value">${score.toFixed(1)}%</div>
+                </div>
+            `;
+        }
+
+        function displayProfessionalCompetencies(data) {
+            if (!data) return;
+            
+            const container = document.getElementById('professional-competencies');
+            
+            // Single metrics
+            const metrics = [
+                { key: 'leadership_management', label: 'Leadership & Management' },
+                { key: 'problem_solving_decision_making', label: 'Problem Solving & Decision Making' },
+                { key: 'communication_skills', label: 'Communication Skills' },
+                { key: 'cognitive_adaptability', label: 'Cognitive Adaptability' }
+            ];
+            
+            metrics.forEach(metric => {
+                const score = data[metric.key] || 0;
+                container.innerHTML += createScoreBar(metric.key, metric.label, score);
+            });
+        }
+
+        function displayWorkStyle(data) {
+            if (!data) return;
+            
+            const container = document.getElementById('work-style');
+            
+            // Dual metrics
+            if (data.work_approach) {
+                container.innerHTML += createDualMetricBar(
+                    'work-approach',
+                    'Work Approach',
+                    data.work_approach.proactive || 70,
+                    data.work_approach.reactive || 30,
+                    'Proactive',
+                    'Reactive'
+                );
+            }
+            
+            if (data.team_dynamics) {
+                container.innerHTML += createDualMetricBar(
+                    'team-dynamics',
+                    'Team Dynamics',
+                    data.team_dynamics.collaborative || 80,
+                    data.team_dynamics.independent || 20,
+                    'Collaborative',
+                    'Independent'
+                );
+            }
+            
+            if (data.work_ethic) {
+                container.innerHTML += createDualMetricBar(
+                    'work-ethic',
+                    'Work Ethic',
+                    data.work_ethic.diligence || 70,
+                    data.work_ethic.efficiency || 30,
+                    'Diligence',
+                    'Efficiency'
+                );
+            }
+        }
+
+        function displayPersonalityCompatibility(data) {
+            if (!data) return;
+            
+            const container = document.getElementById('personality-compatibility');
+            
+            if (data.openness_conventionality) {
+                container.innerHTML += createDualMetricBar(
+                    'openness',
+                    'Openness vs Conventionality',
+                    data.openness_conventionality.open || 75,
+                    data.openness_conventionality.conventional || 25,
+                    'Open',
+                    'Conventional'
+                );
+            }
+            
+            if (data.perfectionism_flexibility) {
+                container.innerHTML += createDualMetricBar(
+                    'perfectionism',
+                    'Perfectionism vs Flexibility',
+                    data.perfectionism_flexibility.flexible || 65,
+                    data.perfectionism_flexibility.structured || 35,
+                    'Flexible',
+                    'Structured'
+                );
+            }
+            
+            if (data.extraversion_introversion) {
+                container.innerHTML += createDualMetricBar(
+                    'extraversion',
+                    'Extraversion vs Introversion',
+                    data.extraversion_introversion.extraverted || 70,
+                    data.extraversion_introversion.introverted || 30,
+                    'Extraverted',
+                    'Introverted'
+                );
+            }
+            
+            if (data.agreeableness_assertiveness) {
+                container.innerHTML += createDualMetricBar(
+                    'agreeableness',
+                    'Agreeableness vs Assertiveness',
+                    data.agreeableness_assertiveness.agreeable || 75,
+                    data.agreeableness_assertiveness.assertive || 25,
+                    'Agreeable',
+                    'Assertive'
+                );
+            }
+        }
+
+        function displayCareerGrowth(data) {
+            if (!data) return;
+            
+            const container = document.getElementById('career-growth');
+            
+            // Single metrics
+            if (data.ambition_drive !== undefined) {
+                container.innerHTML += createScoreBar('ambition', 'Ambition & Drive', data.ambition_drive);
+            }
+            
+            if (data.learning_orientation !== undefined) {
+                container.innerHTML += createScoreBar('learning', 'Learning Orientation', data.learning_orientation);
+            }
+            
+            // Dual metrics
+            if (data.risk_attitude) {
+                container.innerHTML += createDualMetricBar(
+                    'risk-attitude',
+                    'Risk Attitude',
+                    data.risk_attitude.risk_taker || 55,
+                    data.risk_attitude.conservative || 45,
+                    'Risk Taker',
+                    'Conservative'
+                );
+            }
+            
+            if (data.career_focus) {
+                container.innerHTML += createDualMetricBar(
+                    'career-focus',
+                    'Career Focus',
+                    data.career_focus.specialist || 60,
+                    data.career_focus.generalist || 40,
+                    'Specialist',
+                    'Generalist'
+                );
+            }
+        }
+
+        function displayStressManagement(data) {
+            if (!data) return;
+            
+            const container = document.getElementById('stress-management');
+            
+            // Single metrics
+            if (data.work_life_balance !== undefined) {
+                container.innerHTML += createScoreBar('work-life', 'Work-Life Balance', data.work_life_balance);
+            }
+            
+            if (data.pressure_handling !== undefined) {
+                container.innerHTML += createScoreBar('pressure', 'Pressure Handling', data.pressure_handling);
+            }
+            
+            // Dual metrics
+            if (data.stress_response) {
+                container.innerHTML += createDualMetricBar(
+                    'stress-response',
+                    'Stress Response',
+                    data.stress_response.resilient || 75,
+                    data.stress_response.sensitive || 25,
+                    'Resilient',
+                    'Sensitive'
+                );
+            }
+            
+            if (data.recovery_ability) {
+                container.innerHTML += createDualMetricBar(
+                    'recovery',
+                    'Recovery Ability',
+                    data.recovery_ability.quick || 65,
+                    data.recovery_ability.gradual || 35,
+                    'Quick',
+                    'Gradual'
+                );
+            }
+        }
+
+        function displayCulturalFit(data) {
+            if (!data) return;
+            
+            const container = document.getElementById('cultural-fit');
+            
+            // Single metrics
+            if (data.organizational_culture !== undefined) {
+                container.innerHTML += createScoreBar('org-culture', 'Organizational Culture', data.organizational_culture);
+            }
+            
+            if (data.cultural_sensitivity !== undefined) {
+                container.innerHTML += createScoreBar('cultural-sensitivity', 'Cultural Sensitivity', data.cultural_sensitivity);
+            }
+            
+            if (data.social_responsibility !== undefined) {
+                container.innerHTML += createScoreBar('social-responsibility', 'Social Responsibility', data.social_responsibility);
+            }
+            
+            // Dual metrics
+            if (data.adaptability_structure) {
+                container.innerHTML += createDualMetricBar(
+                    'adaptability',
+                    'Adaptability to Structure',
+                    data.adaptability_structure.flexible || 75,
+                    data.adaptability_structure.traditional || 25,
+                    'Flexible',
+                    'Traditional'
+                );
+            }
+        }
+
+        function createDualMetricBar(id, label, value1, value2, label1, label2) {
+            const total = value1 + value2;
+            const percent1 = (value1 / total * 100).toFixed(1);
+            const percent2 = (value2 / total * 100).toFixed(1);
+            
+            return `
+                <div class="dual-metric-item">
+                    <div class="dual-metric-label">${label}</div>
+                    <div class="dual-metrics-container">
+                        <div class="dual-metric-bar" style="width: ${percent1}%"></div>
+                        <div class="dual-metric-bar" style="width: ${percent2}%"></div>
+                    </div>
+                    <div class="dual-metric-values">
+                        <span>${label1}: ${value1.toFixed(1)}%</span>
+                        <span>${label2}: ${value2.toFixed(1)}%</span>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

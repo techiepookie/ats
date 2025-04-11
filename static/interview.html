@@ -1,0 +1,1602 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+</head>
+<body>
+    <div class="container mx-auto py-8 px-4">
+        <h1 class="text-3xl font-bold text-center mb-8">AI Interview System</h1>
+        
+        <!-- Interview Setup -->
+        <div id="setup-container" class="bg-gray-800 p-6 rounded-lg shadow-md max-w-md mx-auto">
+            <h2 class="text-xl font-semibold mb-4">Interview Setup</h2>
+            <form id="setup-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Role</label>
+                    <select id="role" class="w-full p-2 border border-gray-600 bg-gray-700 rounded text-white">
+                        <option value="developer">Developer</option>
+                        <option value="management">Management</option>
+                        <option value="design">Design</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Difficulty</label>
+                    <select id="difficulty" class="w-full p-2 border border-gray-600 bg-gray-700 rounded text-white">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Duration (minutes)</label>
+                    <input type="number" id="duration" min="1" max="30" value="3" class="w-full p-2 border border-gray-600 bg-gray-700 rounded text-white">
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
+                    Start Interview
+                </button>
+            </form>
+        </div>
+        
+        <!-- Interview Conversation -->
+        <div id="interview-container" class="bg-gray-800 p-6 rounded-lg shadow-md max-w-2xl mx-auto hidden">
+            <div id="conversation" class="mb-6 space-y-4 max-h-96 overflow-y-auto">
+                <!-- Messages will be dynamically added here -->
+            </div>
+            
+            <div id="question-display" class="p-4 bg-gray-700 rounded mb-4">
+                <p id="current-question" class="font-medium">Question will appear here</p>
+            </div>
+            
+            <div id="controls" class="flex items-center justify-between">
+                <button id="speak-button" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition">
+                    Play Question
+                </button>
+                
+                <div id="recording-controls" class="flex space-x-4">
+                    <button id="mic-button" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition flex items-center">
+                        <span class="mr-2">Record Answer</span>
+                    </button>
+                    <button id="submit-button" disabled class="bg-gray-600 text-white py-2 px-4 rounded flex items-center">
+                        <span class="mr-2">Submit</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="recording-status" class="mt-4 text-center hidden">
+                <p class="text-red-500 font-medium">Recording... <span id="recording-time">0:00</span></p>
+                <p class="text-gray-400 text-sm mt-1">Please speak for at least 40 seconds to give a complete answer</p>
+            </div>
+        </div>
+        
+        <!-- Results Container -->
+        <div id="results-container" class="bg-gray-800 p-6 rounded-lg shadow-md max-w-6xl mx-auto mt-8 hidden">
+            <h2 class="text-2xl font-bold mb-6 text-center">Interview Results</h2>
+            
+            <!-- Interview Performance Analysis -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2H9"></path><polyline points="16 5 21 5 21 10"></polyline><line x1="21" y1="5" x2="12" y2="14"></line></svg>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Interview Performance Analysis</h3>
+                        <p class="card-subtitle">Analyzed using interview voice responses</p>
+                    </div>
+                </div>
+                
+                <div class="average-score-card">
+                    <div class="average-score-label">Average Score</div>
+                    <div id="interview-performance-score" class="average-score-value">0%</div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Pace -->
+                    <div class="trait-card">
+                        <div class="metric-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="metric-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle id="pace-circle" class="metric-circle-progress" cx="50" cy="50" r="45" stroke="#f97316" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                            </svg>
+                            <div id="pace-score" class="metric-circle-text">0%</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <div class="font-semibold">Pace</div>
+                            <div class="text-xs text-gray-400">Speech rhythm and speed control</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tone -->
+                    <div class="trait-card">
+                        <div class="metric-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="metric-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle id="tone-circle" class="metric-circle-progress" cx="50" cy="50" r="45" stroke="#f97316" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                            </svg>
+                            <div id="tone-score" class="metric-circle-text">0%</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <div class="font-semibold">Tone</div>
+                            <div class="text-xs text-gray-400">Emotional quality and expression</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Clarity -->
+                    <div class="trait-card">
+                        <div class="metric-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="metric-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle id="clarity-circle" class="metric-circle-progress" cx="50" cy="50" r="45" stroke="#f97316" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                            </svg>
+                            <div id="clarity-score" class="metric-circle-text">0%</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <div class="font-semibold">Clarity</div>
+                            <div class="text-xs text-gray-400">Speech articulation and pronunciation</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Empathy -->
+                    <div class="trait-card">
+                        <div class="metric-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="metric-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle id="empathy-circle" class="metric-circle-progress" cx="50" cy="50" r="45" stroke="#f97316" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                            </svg>
+                            <div id="empathy-score" class="metric-circle-text">0%</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <div class="font-semibold">Empathy</div>
+                            <div class="text-xs text-gray-400">Understanding and connection</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Relevancy -->
+                    <div class="trait-card">
+                        <div class="metric-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="metric-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle id="relevancy-circle" class="metric-circle-progress" cx="50" cy="50" r="45" stroke="#3b82f6" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                            </svg>
+                            <div id="relevancy-score" class="metric-circle-text">0%</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <div class="font-semibold">Relevancy</div>
+                            <div class="text-xs text-gray-400">Response context alignment</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sentiment -->
+                    <div class="trait-card">
+                        <div class="metric-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="metric-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle id="sentiment-circle" class="metric-circle-progress" cx="50" cy="50" r="45" stroke="#f97316" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                            </svg>
+                            <div id="sentiment-score" class="metric-circle-text">0%</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <div class="font-semibold">Sentiment</div>
+                            <div class="text-xs text-gray-400">Emotional tone and attitude quality</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Confidence -->
+                    <div class="trait-card">
+                        <div class="metric-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="metric-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle id="confidence-circle" class="metric-circle-progress" cx="50" cy="50" r="45" stroke="#f97316" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                            </svg>
+                            <div id="confidence-score" class="metric-circle-text">0%</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <div class="font-semibold">Confidence</div>
+                            <div class="text-xs text-gray-400">Delivery assurance level, self-belief</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Completeness -->
+                    <div class="trait-card">
+                        <div class="metric-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="metric-circle-bg" cx="50" cy="50" r="45"></circle>
+                                <circle id="completeness-circle" class="metric-circle-progress" cx="50" cy="50" r="45" stroke="#f97316" stroke-dasharray="283" stroke-dashoffset="283"></circle>
+                            </svg>
+                            <div id="completeness-score" class="metric-circle-text">0%</div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <div class="font-semibold">Completeness</div>
+                            <div class="text-xs text-gray-400">Response thoroughness and comprehensiveness</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Job Compatibility -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="card-title">Job Compatibility Dimensions</h3>
+                        <p class="card-subtitle">Comprehensive analysis of key professional attributes</p>
+                    </div>
+                </div>
+                
+                <div class="average-score-card">
+                    <div class="average-score-label">Average Score</div>
+                    <div id="job-compatibility-score" class="average-score-value">0%</div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Professional Competencies -->
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <div class="mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-medium">Professional Competencies</h4>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="score-label">Overall Score</span>
+                                <div class="flex items-center">
+                                    <span id="prof-comp-score" class="score-value mr-1">0%</span>
+                                    <span id="prof-comp-grade" class="text-xs text-gray-400">(Good)</span>
+                                </div>
+                            </div>
+                            <div class="score-bar-container">
+                                <div id="prof-comp-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Evaluation of technical skills and job-specific knowledge.</p>
+                        </div>
+                        
+                        <div id="prof-comp-subtrait-container" class="space-y-4">
+                            <div class="subtrait-toggle flex items-center justify-center py-2 bg-gray-700 rounded cursor-pointer" onclick="toggleSubtraits('prof-comp-subtrait')">
+                                <span>Hide Subtraits</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </div>
+                            
+                            <div id="prof-comp-subtrait-items" class="space-y-4">
+                                <!-- Leadership and Management -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Leadership and Management</span>
+                                        <span id="leadership-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="leadership-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Problem-Solving and Decision-Making -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Problem-Solving and Decision-Making</span>
+                                        <span id="problem-solving-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="problem-solving-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Communication Skills -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Communication Skills</span>
+                                        <span id="communication-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="communication-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cognitive Adaptability -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Cognitive Adaptability</span>
+                                        <span id="cognitive-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="cognitive-bar" class="score-bar score-bar-green" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Work Style and Ethics -->
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <div class="mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
+                            </div>
+                            <h4 class="text-lg font-medium">Work Style and Ethics</h4>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="score-label">Overall Score</span>
+                                <div class="flex items-center">
+                                    <span id="work-style-score" class="score-value mr-1">0%</span>
+                                    <span id="work-style-grade" class="text-xs text-gray-400">(Excellent)</span>
+                                </div>
+                            </div>
+                            <div class="score-bar-container">
+                                <div id="work-style-bar" class="score-bar score-bar-green" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Assessment of work habits, time management, and professional ethics.</p>
+                        </div>
+                        
+                        <div id="work-style-subtrait-container" class="space-y-4">
+                            <div class="subtrait-toggle flex items-center justify-center py-2 bg-gray-700 rounded cursor-pointer" onclick="toggleSubtraits('work-style-subtrait')">
+                                <span>Hide Subtraits</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </div>
+                            
+                            <div id="work-style-subtrait-items" class="space-y-4">
+                                <!-- Work Approach -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Work Approach</span>
+                                        <div class="flex items-center">
+                                            <span id="proactive-score" class="score-value text-blue-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="reactive-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="proactive-bar" class="score-bar-blue" style="width: 0%"></div>
+                                            <div id="reactive-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Proactive</span>
+                                        <span>Reactive</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Team Dynamics -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Team Dynamics</span>
+                                        <div class="flex items-center">
+                                            <span id="collaborative-score" class="score-value text-green-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="independent-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="collaborative-bar" class="score-bar-green" style="width: 0%"></div>
+                                            <div id="independent-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Collaborative</span>
+                                        <span>Independent</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Work Ethic -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Work Ethic</span>
+                                        <div class="flex items-center">
+                                            <span id="diligence-score" class="score-value text-blue-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="efficiency-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="diligence-bar" class="score-bar-blue" style="width: 0%"></div>
+                                            <div id="efficiency-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Diligence</span>
+                                        <span>Efficiency</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Personality Compatibilities -->
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <div class="mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            </div>
+                            <h4 class="text-lg font-medium">Personality Compatibilities</h4>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="score-label">Overall Score</span>
+                                <div class="flex items-center">
+                                    <span id="personality-score" class="score-value mr-1">0%</span>
+                                    <span id="personality-grade" class="text-xs text-gray-400">(Good)</span>
+                                </div>
+                            </div>
+                            <div class="score-bar-container">
+                                <div id="personality-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Alignment with team dynamics and company culture.</p>
+                        </div>
+                        
+                        <div id="personality-subtrait-container" class="space-y-4">
+                            <div class="subtrait-toggle flex items-center justify-center py-2 bg-gray-700 rounded cursor-pointer" onclick="toggleSubtraits('personality-subtrait')">
+                                <span>Hide Subtraits</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </div>
+                            
+                            <div id="personality-subtrait-items" class="space-y-4">
+                                <!-- Various personality traits - use the same pattern as above for each -->
+                                <!-- Openness vs. Conventionality -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Openness vs. Conventionality</span>
+                                        <div class="flex items-center">
+                                            <span id="open-score" class="score-value text-green-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="conventional-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="open-bar" class="score-bar-green" style="width: 0%"></div>
+                                            <div id="conventional-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Open</span>
+                                        <span>Conventional</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Additional personality traits would be added here -->
+                                <!-- Perfectionism vs. Flexibility -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Perfectionism vs. Flexibility</span>
+                                        <div class="flex items-center">
+                                            <span id="flexible-score" class="score-value text-blue-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="structured-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="flexible-bar" class="score-bar-blue" style="width: 0%"></div>
+                                            <div id="structured-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Flexible</span>
+                                        <span>Structured</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Extraversion vs. Introversion -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Extraversion vs. Introversion</span>
+                                        <div class="flex items-center">
+                                            <span id="extraverted-score" class="score-value text-green-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="introverted-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="extraverted-bar" class="score-bar-green" style="width: 0%"></div>
+                                            <div id="introverted-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Extraverted</span>
+                                        <span>Introverted</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Agreeableness vs. Assertiveness -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Agreeableness vs. Assertiveness</span>
+                                        <div class="flex items-center">
+                                            <span id="agreeable-score" class="score-value text-blue-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="assertive-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="agreeable-bar" class="score-bar-blue" style="width: 0%"></div>
+                                            <div id="assertive-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Agreeable</span>
+                                        <span>Assertive</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Career and Growth Orientation -->
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <div class="mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                            </div>
+                            <h4 class="text-lg font-medium">Career and Growth Orientation</h4>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="score-label">Overall Score</span>
+                                <div class="flex items-center">
+                                    <span id="career-score" class="score-value mr-1">0%</span>
+                                    <span id="career-grade" class="text-xs text-gray-400">(Good)</span>
+                                </div>
+                            </div>
+                            <div class="score-bar-container">
+                                <div id="career-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Potential for professional development and long-term career aspirations.</p>
+                        </div>
+                        
+                        <div id="career-subtrait-container" class="space-y-4">
+                            <div class="subtrait-toggle flex items-center justify-center py-2 bg-gray-700 rounded cursor-pointer" onclick="toggleSubtraits('career-subtrait')">
+                                <span>Hide Subtraits</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </div>
+                            
+                            <div id="career-subtrait-items" class="space-y-4">
+                                <!-- Career growth traits -->
+                                <!-- Ambition and Drive -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Ambition and Drive</span>
+                                        <span id="ambition-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="ambition-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Risk Attitude -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Risk Attitude</span>
+                                        <div class="flex items-center">
+                                            <span id="risk-taker-score" class="score-value text-orange-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="conservative-score" class="score-value text-orange-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="risk-taker-bar" class="score-bar-orange" style="width: 0%"></div>
+                                            <div id="conservative-bar" class="score-bar-orange" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Risk-Taker</span>
+                                        <span>Conservative</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Career Focus -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Career Focus</span>
+                                        <div class="flex items-center">
+                                            <span id="specialist-score" class="score-value text-blue-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="generalist-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="specialist-bar" class="score-bar-blue" style="width: 0%"></div>
+                                            <div id="generalist-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Specialist</span>
+                                        <span>Generalist</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Learning Orientation -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Learning Orientation</span>
+                                        <span id="learning-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="learning-bar" class="score-bar score-bar-green" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Stress and Pressure Management -->
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <div class="mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-medium">Stress and Pressure Management</h4>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="score-label">Overall Score</span>
+                                <div class="flex items-center">
+                                    <span id="stress-score" class="score-value mr-1">0%</span>
+                                    <span id="stress-grade" class="text-xs text-gray-400">(Good)</span>
+                                </div>
+                            </div>
+                            <div class="score-bar-container">
+                                <div id="stress-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Ability to handle pressure and maintain performance under stress.</p>
+                        </div>
+                        
+                        <div id="stress-subtrait-container" class="space-y-4">
+                            <div class="subtrait-toggle flex items-center justify-center py-2 bg-gray-700 rounded cursor-pointer" onclick="toggleSubtraits('stress-subtrait')">
+                                <span>Hide Subtraits</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </div>
+                            
+                            <div id="stress-subtrait-items" class="space-y-4">
+                                <!-- Stress management traits -->
+                                <!-- Stress Response -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Stress Response</span>
+                                        <div class="flex items-center">
+                                            <span id="resilient-score" class="score-value text-blue-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="sensitive-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="resilient-bar" class="score-bar-blue" style="width: 0%"></div>
+                                            <div id="sensitive-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Resilient</span>
+                                        <span>Sensitive</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Work-Life Balance -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Work-Life Balance</span>
+                                        <span id="balance-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="balance-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pressure Handling -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Pressure Handling</span>
+                                        <span id="pressure-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="pressure-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Recovery Ability -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Recovery Ability</span>
+                                        <div class="flex items-center">
+                                            <span id="quick-score" class="score-value text-blue-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="gradual-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="quick-bar" class="score-bar-blue" style="width: 0%"></div>
+                                            <div id="gradual-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Quick</span>
+                                        <span>Gradual</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cultural and Organizational Fit -->
+                    <div>
+                        <div class="flex items-center mb-4">
+                            <div class="mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            </div>
+                            <h4 class="text-lg font-medium">Cultural and Organizational Fit</h4>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="score-label">Overall Score</span>
+                                <div class="flex items-center">
+                                    <span id="cultural-score" class="score-value mr-1">0%</span>
+                                    <span id="cultural-grade" class="text-xs text-gray-400">(Good)</span>
+                                </div>
+                            </div>
+                            <div class="score-bar-container">
+                                <div id="cultural-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Compatibility with company values and organizational structure.</p>
+                        </div>
+                        
+                        <div id="cultural-subtrait-container" class="space-y-4">
+                            <div class="subtrait-toggle flex items-center justify-center py-2 bg-gray-700 rounded cursor-pointer" onclick="toggleSubtraits('cultural-subtrait')">
+                                <span>Hide Subtraits</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </div>
+                            
+                            <div id="cultural-subtrait-items" class="space-y-4">
+                                <!-- Cultural fit traits -->
+                                <!-- Organizational Culture -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Organizational Culture</span>
+                                        <span id="org-culture-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="org-culture-bar" class="score-bar score-bar-green" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cultural Sensitivity -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Cultural Sensitivity</span>
+                                        <span id="cultural-sensitivity-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="cultural-sensitivity-bar" class="score-bar score-bar-blue" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Social Responsibility -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Social Responsibility</span>
+                                        <span id="social-score" class="score-value">0%</span>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div id="social-bar" class="score-bar score-bar-green" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Adaptability to Structure -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="score-label">Adaptability to Structure</span>
+                                        <div class="flex items-center">
+                                            <span id="adaptable-score" class="score-value text-blue-400 mr-1">0%</span>
+                                            <span class="text-gray-400 mx-1">|</span>
+                                            <span id="traditional-score" class="score-value text-red-400">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="score-bar-container">
+                                        <div class="score-bar-split">
+                                            <div id="adaptable-bar" class="score-bar-blue" style="width: 0%"></div>
+                                            <div id="traditional-bar" class="score-bar-red" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="split-label">
+                                        <span>Flexible</span>
+                                        <span>Traditional</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="restart-button" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition mt-6">
+                Start New Interview
+            </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+                <div class="flex items-center space-x-3">
+                    <div class="loading"></div>
+                    <p id="loading-text" class="text-white">Processing...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const setupContainer = document.getElementById('setup-container');
+        const interviewContainer = document.getElementById('interview-container');
+        const resultsContainer = document.getElementById('results-container');
+        const setupForm = document.getElementById('setup-form');
+        const conversation = document.getElementById('conversation');
+        const currentQuestion = document.getElementById('current-question');
+        const micButton = document.getElementById('mic-button');
+        const submitButton = document.getElementById('submit-button');
+        const recordingStatus = document.getElementById('recording-status');
+        const recordingTime = document.getElementById('recording-time');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const loadingText = document.getElementById('loading-text');
+        const restartButton = document.getElementById('restart-button');
+        const speakButton = document.getElementById('speak-button');
+
+        // Global variables
+        let mediaRecorder;
+        let audioChunks = [];
+        let recordingInterval;
+        let secondsRecorded = 0;
+        let currentRole = '';
+        let currentQuestionText = '';
+        let audioPlayer = new Audio();
+        
+        // Setup the interview
+        setupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const role = document.getElementById('role').value;
+            const difficulty = document.getElementById('difficulty').value;
+            const duration = document.getElementById('duration').value;
+            
+            currentRole = role;
+            
+            showLoading('Starting interview...');
+            
+            try {
+                const response = await fetch('/start_interview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ role, difficulty, duration }),
+                });
+                
+                // Check if the response is audio or JSON
+                const contentType = response.headers.get('Content-Type');
+                
+                if (contentType && contentType.includes('audio')) {
+                    // Handle audio response
+                    const blob = await response.blob();
+                    const audioUrl = URL.createObjectURL(blob);
+                    audioPlayer.src = audioUrl;
+                    
+                    // Get question text from headers if available
+                    currentQuestionText = response.headers.get('X-Question-Text') || 'Question not available in text format';
+                    currentQuestion.textContent = currentQuestionText;
+                    
+                    setupContainer.classList.add('hidden');
+                    interviewContainer.classList.remove('hidden');
+                    
+                    // Add the first question to the conversation
+                    addMessageToConversation('interviewer', currentQuestionText);
+                    
+                    // Auto-play the question
+                    audioPlayer.play();
+                    
+                    hideLoading();
+                } else {
+                    // Handle JSON response as fallback
+                    const data = await response.json();
+                    currentQuestionText = data.content;
+                    currentQuestion.textContent = currentQuestionText;
+                    
+                    setupContainer.classList.add('hidden');
+                    interviewContainer.classList.remove('hidden');
+                    
+                    // Add the first question to the conversation
+                    addMessageToConversation('interviewer', currentQuestionText);
+                    
+                    hideLoading();
+                }
+            } catch (error) {
+                console.error('Error starting interview:', error);
+                alert('Failed to start the interview. Please try again.');
+                hideLoading();
+            }
+        });
+        
+        // Speak button to play the question audio
+        speakButton.addEventListener('click', () => {
+            audioPlayer.play();
+        });
+        
+        // Record answer
+        micButton.addEventListener('click', async () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                // Stop recording
+                mediaRecorder.stop();
+                micButton.textContent = 'Record Answer';
+                micButton.classList.remove('microphone-active');
+                clearInterval(recordingInterval);
+                recordingStatus.classList.add('hidden');
+                submitButton.disabled = false;
+                submitButton.classList.remove('bg-gray-600');
+                submitButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            } else {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    secondsRecorded = 0;
+                    
+                    mediaRecorder.addEventListener('dataavailable', (event) => {
+                        audioChunks.push(event.data);
+                    });
+                    
+                    mediaRecorder.addEventListener('stop', () => {
+                        // Recording stopped
+                    });
+                    
+                    mediaRecorder.start();
+                    micButton.textContent = 'Stop Recording';
+                    micButton.classList.add('microphone-active');
+                    recordingStatus.classList.remove('hidden');
+                    
+                    // Update recording time
+                    recordingInterval = setInterval(() => {
+                        secondsRecorded++;
+                        const minutes = Math.floor(secondsRecorded / 60);
+                        const seconds = secondsRecorded % 60;
+                        recordingTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    }, 1000);
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    alert('Failed to access microphone. Please make sure your microphone is connected and you have granted permission to use it.');
+                }
+            }
+        });
+        
+        // Submit answer
+        submitButton.addEventListener('click', async () => {
+            if (audioChunks.length === 0) {
+                alert('Please record your answer first.');
+                return;
+            }
+            
+            // Check if recording is at least 10 seconds (minimum useful response)
+            if (secondsRecorded < 10) {
+                const proceed = confirm('Your response is very short. Are you sure you want to submit it? We recommend speaking for at least 40 seconds to provide a complete answer.');
+                if (!proceed) return;
+            }
+            
+            showLoading('Processing your answer...');
+            
+            try {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'answer.webm');
+                formData.append('role', currentRole);
+                formData.append('question', currentQuestionText);
+                
+                const response = await fetch('/submit_audio_answer', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Reset recording state
+                submitButton.disabled = true;
+                submitButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                submitButton.classList.add('bg-gray-600');
+                audioChunks = [];
+                
+                // Check if the response is audio or JSON
+                const contentType = response.headers.get('Content-Type');
+                
+                if (contentType && contentType.includes('audio')) {
+                    // Handle audio response
+                    const blob = await response.blob();
+                    const audioUrl = URL.createObjectURL(blob);
+                    
+                    // Get the transcribed answer from the backend (would be ideal to have this in a header)
+                    // For now we'll just display a generic message
+                    addMessageToConversation('user', 'Your recorded answer');
+                    
+                    const isComplete = response.headers.get('X-Complete') === 'true';
+                    
+                    if (isComplete) {
+                        // This is the final evaluation
+                        audioPlayer.src = audioUrl;
+                        audioPlayer.play();
+                        
+                        // Try to get result data from header
+                        const resultDataHeader = response.headers.get('X-Result-Data');
+                        let resultData;
+                        
+                        if (resultDataHeader) {
+                            try {
+                                resultData = JSON.parse(resultDataHeader);
+                                displayDetailedResults(resultData);
+                            } catch (error) {
+                                console.error('Error parsing result data:', error);
+                                // Will handle this below
+                            }
+                        }
+                        
+                        if (!resultData) {
+                            // If we couldn't get result data from header, wait for audio to finish then show placeholder
+                            audioPlayer.onended = () => {
+                                displayPlaceholderResults();
+                                interviewContainer.classList.add('hidden');
+                                resultsContainer.classList.remove('hidden');
+                                hideLoading();
+                            };
+                        } else {
+                            interviewContainer.classList.add('hidden');
+                            resultsContainer.classList.remove('hidden');
+                            hideLoading();
+                        }
+                    } else {
+                        // This is the next question
+                        audioPlayer.src = audioUrl;
+                        audioPlayer.play();
+                        
+                        // Get the next question text from headers if available
+                        const nextQuestionText = response.headers.get('X-Question-Text') || 'Next question not available in text format';
+                        currentQuestionText = nextQuestionText;
+                        currentQuestion.textContent = nextQuestionText;
+                        
+                        // Add the next question to the conversation
+                        addMessageToConversation('interviewer', nextQuestionText);
+                        
+                        hideLoading();
+                    }
+                } else {
+                    // Handle JSON response as fallback
+                    const data = await response.json();
+                    
+                    // Add the transcribed answer to the conversation
+                    addMessageToConversation('user', 'Your recorded answer');
+                    
+                    if (data.complete) {
+                        // Display results
+                        displayDetailedResults(data.result);
+                        interviewContainer.classList.add('hidden');
+                        resultsContainer.classList.remove('hidden');
+                    } else {
+                        // Display next question
+                        currentQuestionText = data.next_question;
+                        currentQuestion.textContent = data.next_question;
+                        addMessageToConversation('interviewer', data.next_question);
+                    }
+                    
+                    hideLoading();
+                }
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+                alert('Failed to submit your answer. Please try again.');
+                hideLoading();
+            }
+        });
+        
+        // Restart interview
+        restartButton.addEventListener('click', () => {
+            resultsContainer.classList.add('hidden');
+            setupContainer.classList.remove('hidden');
+            conversation.innerHTML = '';
+            currentQuestion.textContent = 'Question will appear here';
+        });
+        
+        // Helper functions
+        function addMessageToConversation(sender, message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-3 rounded-lg ${sender === 'interviewer' ? 'bg-blue-900 ml-auto' : 'bg-gray-700 mr-auto'}`;
+            messageDiv.style.maxWidth = '80%';
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'font-bold block mb-1';
+            nameSpan.textContent = sender === 'interviewer' ? 'Interviewer' : 'You';
+            
+            const messageP = document.createElement('p');
+            messageP.textContent = message;
+            
+            messageDiv.appendChild(nameSpan);
+            messageDiv.appendChild(messageP);
+            conversation.appendChild(messageDiv);
+            
+            // Scroll to the bottom
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        function showLoading(message) {
+            loadingText.textContent = message || 'Processing...';
+            loadingIndicator.classList.remove('hidden');
+        }
+        
+        function hideLoading() {
+            loadingIndicator.classList.add('hidden');
+        }
+        
+        function displayDetailedResults(result) {
+            // Check if result contains the expected structure
+            if (!result) {
+                displayPlaceholderResults();
+                return;
+            }
+            
+            try {
+                // Interview Performance (circular metrics)
+                if (result.interview_performance) {
+                    const perf = result.interview_performance;
+                    const avgScore = Math.round(perf.average_score);
+                    document.getElementById('interview-performance-score').textContent = `${avgScore}%`;
+                    
+                    // Set circular metrics
+                    updateCircleMetric('pace', Math.round(perf.pace.score));
+                    updateCircleMetric('tone', Math.round(perf.tone.score));
+                    updateCircleMetric('clarity', Math.round(perf.clarity.score));
+                    updateCircleMetric('empathy', Math.round(perf.empathy.score));
+                    updateCircleMetric('relevancy', Math.round(perf.relevancy.score));
+                    updateCircleMetric('sentiment', Math.round(perf.sentiment.score));
+                    updateCircleMetric('confidence', Math.round(perf.confidence.score));
+                    updateCircleMetric('completeness', Math.round(perf.completeness.score));
+                }
+                
+                // Job Compatibility
+                if (result.job_compatibility) {
+                    const compat = result.job_compatibility;
+                    const jobScore = Math.round(compat.average_score);
+                    document.getElementById('job-compatibility-score').textContent = `${jobScore}%`;
+                    
+                    // Professional Competencies
+                    if (compat.professional_competencies) {
+                        const pc = compat.professional_competencies;
+                        const pcScore = Math.round(pc.overall);
+                        document.getElementById('prof-comp-score').textContent = `${pcScore}%`;
+                        document.getElementById('prof-comp-bar').style.width = `${pcScore}%`;
+                        document.getElementById('prof-comp-grade').textContent = getGradeLabel(pcScore);
+                        
+                        // Subtraits
+                        document.getElementById('leadership-score').textContent = `${Math.round(pc.leadership_management)}%`;
+                        document.getElementById('leadership-bar').style.width = `${Math.round(pc.leadership_management)}%`;
+                        
+                        document.getElementById('problem-solving-score').textContent = `${Math.round(pc.problem_solving_decision_making)}%`;
+                        document.getElementById('problem-solving-bar').style.width = `${Math.round(pc.problem_solving_decision_making)}%`;
+                        
+                        document.getElementById('communication-score').textContent = `${Math.round(pc.communication_skills)}%`;
+                        document.getElementById('communication-bar').style.width = `${Math.round(pc.communication_skills)}%`;
+                        
+                        document.getElementById('cognitive-score').textContent = `${Math.round(pc.cognitive_adaptability)}%`;
+                        document.getElementById('cognitive-bar').style.width = `${Math.round(pc.cognitive_adaptability)}%`;
+                    }
+                    
+                    // Work Style and Ethics
+                    if (compat.work_style_ethics) {
+                        const ws = compat.work_style_ethics;
+                        const wsScore = Math.round(ws.overall);
+                        document.getElementById('work-style-score').textContent = `${wsScore}%`;
+                        document.getElementById('work-style-bar').style.width = `${wsScore}%`;
+                        document.getElementById('work-style-grade').textContent = getGradeLabel(wsScore);
+                        
+                        // Work Approach
+                        if (ws.work_approach) {
+                            const proactive = Math.round(ws.work_approach.proactive);
+                            const reactive = Math.round(ws.work_approach.reactive);
+                            document.getElementById('proactive-score').textContent = `${proactive}%`;
+                            document.getElementById('reactive-score').textContent = `${reactive}%`;
+                            document.getElementById('proactive-bar').style.width = `${proactive}%`;
+                            document.getElementById('reactive-bar').style.width = `${reactive}%`;
+                        }
+                        
+                        // Team Dynamics
+                        if (ws.team_dynamics) {
+                            const collaborative = Math.round(ws.team_dynamics.collaborative);
+                            const independent = Math.round(ws.team_dynamics.independent);
+                            document.getElementById('collaborative-score').textContent = `${collaborative}%`;
+                            document.getElementById('independent-score').textContent = `${independent}%`;
+                            document.getElementById('collaborative-bar').style.width = `${collaborative}%`;
+                            document.getElementById('independent-bar').style.width = `${independent}%`;
+                        }
+                        
+                        // Work Ethic
+                        if (ws.work_ethic) {
+                            const diligence = Math.round(ws.work_ethic.diligence);
+                            const efficiency = Math.round(ws.work_ethic.efficiency);
+                            document.getElementById('diligence-score').textContent = `${diligence}%`;
+                            document.getElementById('efficiency-score').textContent = `${efficiency}%`;
+                            document.getElementById('diligence-bar').style.width = `${diligence}%`;
+                            document.getElementById('efficiency-bar').style.width = `${efficiency}%`;
+                        }
+                    }
+                    
+                    // Personality Compatibility
+                    if (compat.personality_compatibility) {
+                        const pc = compat.personality_compatibility;
+                        const pcScore = Math.round(pc.overall);
+                        document.getElementById('personality-score').textContent = `${pcScore}%`;
+                        document.getElementById('personality-bar').style.width = `${pcScore}%`;
+                        document.getElementById('personality-grade').textContent = getGradeLabel(pcScore);
+                        
+                        // Openness vs. Conventionality
+                        if (pc.openness_conventionality) {
+                            const open = Math.round(pc.openness_conventionality.open);
+                            const conventional = Math.round(pc.openness_conventionality.conventional);
+                            document.getElementById('open-score').textContent = `${open}%`;
+                            document.getElementById('conventional-score').textContent = `${conventional}%`;
+                            document.getElementById('open-bar').style.width = `${open}%`;
+                            document.getElementById('conventional-bar').style.width = `${conventional}%`;
+                        }
+                        
+                        // Perfectionism vs. Flexibility
+                        if (pc.perfectionism_flexibility) {
+                            const flexible = Math.round(pc.perfectionism_flexibility.flexible);
+                            const structured = Math.round(pc.perfectionism_flexibility.structured);
+                            document.getElementById('flexible-score').textContent = `${flexible}%`;
+                            document.getElementById('structured-score').textContent = `${structured}%`;
+                            document.getElementById('flexible-bar').style.width = `${flexible}%`;
+                            document.getElementById('structured-bar').style.width = `${structured}%`;
+                        }
+                        
+                        // Extraversion vs. Introversion
+                        if (pc.extraversion_introversion) {
+                            const extraverted = Math.round(pc.extraversion_introversion.extraverted);
+                            const introverted = Math.round(pc.extraversion_introversion.introverted);
+                            document.getElementById('extraverted-score').textContent = `${extraverted}%`;
+                            document.getElementById('introverted-score').textContent = `${introverted}%`;
+                            document.getElementById('extraverted-bar').style.width = `${extraverted}%`;
+                            document.getElementById('introverted-bar').style.width = `${introverted}%`;
+                        }
+                        
+                        // Agreeableness vs. Assertiveness
+                        if (pc.agreeableness_assertiveness) {
+                            const agreeable = Math.round(pc.agreeableness_assertiveness.agreeable);
+                            const assertive = Math.round(pc.agreeableness_assertiveness.assertive);
+                            document.getElementById('agreeable-score').textContent = `${agreeable}%`;
+                            document.getElementById('assertive-score').textContent = `${assertive}%`;
+                            document.getElementById('agreeable-bar').style.width = `${agreeable}%`;
+                            document.getElementById('assertive-bar').style.width = `${assertive}%`;
+                        }
+                    }
+                    
+                    // Career Growth
+                    if (compat.career_growth) {
+                        const cg = compat.career_growth;
+                        const cgScore = Math.round(cg.overall);
+                        document.getElementById('career-score').textContent = `${cgScore}%`;
+                        document.getElementById('career-bar').style.width = `${cgScore}%`;
+                        document.getElementById('career-grade').textContent = getGradeLabel(cgScore);
+                        
+                        // Ambition and Drive
+                        document.getElementById('ambition-score').textContent = `${Math.round(cg.ambition_drive)}%`;
+                        document.getElementById('ambition-bar').style.width = `${Math.round(cg.ambition_drive)}%`;
+                        
+                        // Risk Attitude
+                        if (cg.risk_attitude) {
+                            const riskTaker = Math.round(cg.risk_attitude.risk_taker);
+                            const conservative = Math.round(cg.risk_attitude.conservative);
+                            document.getElementById('risk-taker-score').textContent = `${riskTaker}%`;
+                            document.getElementById('conservative-score').textContent = `${conservative}%`;
+                            document.getElementById('risk-taker-bar').style.width = `${riskTaker}%`;
+                            document.getElementById('conservative-bar').style.width = `${conservative}%`;
+                        }
+                        
+                        // Career Focus
+                        if (cg.career_focus) {
+                            const specialist = Math.round(cg.career_focus.specialist);
+                            const generalist = Math.round(cg.career_focus.generalist);
+                            document.getElementById('specialist-score').textContent = `${specialist}%`;
+                            document.getElementById('generalist-score').textContent = `${generalist}%`;
+                            document.getElementById('specialist-bar').style.width = `${specialist}%`;
+                            document.getElementById('generalist-bar').style.width = `${generalist}%`;
+                        }
+                        
+                        // Learning Orientation
+                        document.getElementById('learning-score').textContent = `${Math.round(cg.learning_orientation)}%`;
+                        document.getElementById('learning-bar').style.width = `${Math.round(cg.learning_orientation)}%`;
+                    }
+                    
+                    // Stress Management
+                    if (compat.stress_management) {
+                        const sm = compat.stress_management;
+                        const smScore = Math.round(sm.overall);
+                        document.getElementById('stress-score').textContent = `${smScore}%`;
+                        document.getElementById('stress-bar').style.width = `${smScore}%`;
+                        document.getElementById('stress-grade').textContent = getGradeLabel(smScore);
+                        
+                        // Stress Response
+                        if (sm.stress_response) {
+                            const resilient = Math.round(sm.stress_response.resilient);
+                            const sensitive = Math.round(sm.stress_response.sensitive);
+                            document.getElementById('resilient-score').textContent = `${resilient}%`;
+                            document.getElementById('sensitive-score').textContent = `${sensitive}%`;
+                            document.getElementById('resilient-bar').style.width = `${resilient}%`;
+                            document.getElementById('sensitive-bar').style.width = `${sensitive}%`;
+                        }
+                        
+                        // Work-Life Balance
+                        document.getElementById('balance-score').textContent = `${Math.round(sm.work_life_balance)}%`;
+                        document.getElementById('balance-bar').style.width = `${Math.round(sm.work_life_balance)}%`;
+                        
+                        // Pressure Handling
+                        document.getElementById('pressure-score').textContent = `${Math.round(sm.pressure_handling)}%`;
+                        document.getElementById('pressure-bar').style.width = `${Math.round(sm.pressure_handling)}%`;
+                        
+                        // Recovery Ability
+                        if (sm.recovery_ability) {
+                            const quick = Math.round(sm.recovery_ability.quick);
+                            const gradual = Math.round(sm.recovery_ability.gradual);
+                            document.getElementById('quick-score').textContent = `${quick}%`;
+                            document.getElementById('gradual-score').textContent = `${gradual}%`;
+                            document.getElementById('quick-bar').style.width = `${quick}%`;
+                            document.getElementById('gradual-bar').style.width = `${gradual}%`;
+                        }
+                    }
+                    
+                    // Cultural Fit
+                    if (compat.cultural_fit) {
+                        const cf = compat.cultural_fit;
+                        const cfScore = Math.round(cf.overall);
+                        document.getElementById('cultural-score').textContent = `${cfScore}%`;
+                        document.getElementById('cultural-bar').style.width = `${cfScore}%`;
+                        document.getElementById('cultural-grade').textContent = getGradeLabel(cfScore);
+                        
+                        // Organizational Culture
+                        document.getElementById('org-culture-score').textContent = `${Math.round(cf.organizational_culture)}%`;
+                        document.getElementById('org-culture-bar').style.width = `${Math.round(cf.organizational_culture)}%`;
+                        
+                        // Cultural Sensitivity
+                        document.getElementById('cultural-sensitivity-score').textContent = `${Math.round(cf.cultural_sensitivity)}%`;
+                        document.getElementById('cultural-sensitivity-bar').style.width = `${Math.round(cf.cultural_sensitivity)}%`;
+                        
+                        // Social Responsibility
+                        document.getElementById('social-score').textContent = `${Math.round(cf.social_responsibility)}%`;
+                        document.getElementById('social-bar').style.width = `${Math.round(cf.social_responsibility)}%`;
+                        
+                        // Adaptability to Structure
+                        if (cf.adaptability_structure) {
+                            const adaptable = Math.round(cf.adaptability_structure.flexible);
+                            const traditional = Math.round(cf.adaptability_structure.traditional);
+                            document.getElementById('adaptable-score').textContent = `${adaptable}%`;
+                            document.getElementById('traditional-score').textContent = `${traditional}%`;
+                            document.getElementById('adaptable-bar').style.width = `${adaptable}%`;
+                            document.getElementById('traditional-bar').style.width = `${traditional}%`;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error displaying results:', error);
+                displayPlaceholderResults();
+            }
+        }
+        
+        function updateCircleMetric(id, value) {
+            // Update the circular progress bar
+            const circumference = 2 * Math.PI * 45; // 45 is the radius used in the SVG
+            const offset = circumference - (value / 100) * circumference;
+            const circle = document.getElementById(`${id}-circle`);
+            const scoreText = document.getElementById(`${id}-score`);
+            
+            if (circle && scoreText) {
+                circle.style.strokeDasharray = circumference;
+                circle.style.strokeDashoffset = offset;
+                scoreText.textContent = `${value}%`;
+                
+                // Change color based on score
+                if (value >= 80) {
+                    circle.style.stroke = '#10b981'; // Green
+                } else if (value >= 65) {
+                    circle.style.stroke = '#3b82f6'; // Blue
+                } else if (value >= 50) {
+                    circle.style.stroke = '#f97316'; // Orange
+                } else {
+                    circle.style.stroke = '#ef4444'; // Red
+                }
+            }
+        }
+        
+        function getGradeLabel(score) {
+            if (score >= 90) return '(Excellent)';
+            if (score >= 80) return '(Very Good)';
+            if (score >= 70) return '(Good)';
+            if (score >= 60) return '(Satisfactory)';
+            if (score >= 50) return '(Adequate)';
+            return '(Needs Improvement)';
+        }
+        
+        function displayPlaceholderResults() {
+            // Set placeholder values for a nice demo
+            // Interview Performance
+            document.getElementById('interview-performance-score').textContent = '74%';
+            
+            updateCircleMetric('pace', 40);
+            updateCircleMetric('tone', 30);
+            updateCircleMetric('clarity', 40);
+            updateCircleMetric('empathy', 30);
+            updateCircleMetric('relevancy', 55);
+            updateCircleMetric('sentiment', 40);
+            updateCircleMetric('confidence', 45);
+            updateCircleMetric('completeness', 35);
+            
+            // Job Compatibility
+            document.getElementById('job-compatibility-score').textContent = '73%';
+            
+            // Professional Competencies
+            document.getElementById('prof-comp-score').textContent = '72%';
+            document.getElementById('prof-comp-bar').style.width = '72%';
+            document.getElementById('prof-comp-grade').textContent = '(Good)';
+            
+            document.getElementById('leadership-score').textContent = '66%';
+            document.getElementById('leadership-bar').style.width = '66%';
+            
+            document.getElementById('problem-solving-score').textContent = '64%';
+            document.getElementById('problem-solving-bar').style.width = '64%';
+            
+            document.getElementById('communication-score').textContent = '65%';
+            document.getElementById('communication-bar').style.width = '65%';
+            
+            document.getElementById('cognitive-score').textContent = '82%';
+            document.getElementById('cognitive-bar').style.width = '82%';
+            
+            // Work Style
+            document.getElementById('work-style-score').textContent = '80%';
+            document.getElementById('work-style-bar').style.width = '80%';
+            document.getElementById('work-style-grade').textContent = '(Excellent)';
+            
+            document.getElementById('proactive-score').textContent = '76%';
+            document.getElementById('reactive-score').textContent = '24%';
+            document.getElementById('proactive-bar').style.width = '76%';
+            document.getElementById('reactive-bar').style.width = '24%';
+            
+            document.getElementById('collaborative-score').textContent = '83%';
+            document.getElementById('independent-score').textContent = '17%';
+            document.getElementById('collaborative-bar').style.width = '83%';
+            document.getElementById('independent-bar').style.width = '17%';
+            
+            document.getElementById('diligence-score').textContent = '70%';
+            document.getElementById('efficiency-score').textContent = '30%';
+            document.getElementById('diligence-bar').style.width = '70%';
+            document.getElementById('efficiency-bar').style.width = '30%';
+            
+            // Set all other placeholder values in a similar way...
+            // Personality
+            document.getElementById('personality-score').textContent = '74%';
+            document.getElementById('personality-bar').style.width = '74%';
+            document.getElementById('personality-grade').textContent = '(Good)';
+            
+            document.getElementById('open-score').textContent = '82%';
+            document.getElementById('conventional-score').textContent = '18%';
+            document.getElementById('open-bar').style.width = '82%';
+            document.getElementById('conventional-bar').style.width = '18%';
+            
+            document.getElementById('flexible-score').textContent = '75%';
+            document.getElementById('structured-score').textContent = '25%';
+            document.getElementById('flexible-bar').style.width = '75%';
+            document.getElementById('structured-bar').style.width = '25%';
+            
+            document.getElementById('extraverted-score').textContent = '83%';
+            document.getElementById('introverted-score').textContent = '17%';
+            document.getElementById('extraverted-bar').style.width = '83%';
+            document.getElementById('introverted-bar').style.width = '17%';
+            
+            document.getElementById('agreeable-score').textContent = '73%';
+            document.getElementById('assertive-score').textContent = '27%';
+            document.getElementById('agreeable-bar').style.width = '73%';
+            document.getElementById('assertive-bar').style.width = '27%';
+            
+            // Career
+            document.getElementById('career-score').textContent = '65%';
+            document.getElementById('career-bar').style.width = '65%';
+            document.getElementById('career-grade').textContent = '(Good)';
+            
+            document.getElementById('ambition-score').textContent = '60%';
+            document.getElementById('ambition-bar').style.width = '60%';
+            
+            document.getElementById('risk-taker-score').textContent = '55%';
+            document.getElementById('conservative-score').textContent = '45%';
+            document.getElementById('risk-taker-bar').style.width = '55%';
+            document.getElementById('conservative-bar').style.width = '45%';
+            
+            document.getElementById('specialist-score').textContent = '63%';
+            document.getElementById('generalist-score').textContent = '37%';
+            document.getElementById('specialist-bar').style.width = '63%';
+            document.getElementById('generalist-bar').style.width = '37%';
+            
+            document.getElementById('learning-score').textContent = '80%';
+            document.getElementById('learning-bar').style.width = '80%';
+            
+            // Stress
+            document.getElementById('stress-score').textContent = '72%';
+            document.getElementById('stress-bar').style.width = '72%';
+            document.getElementById('stress-grade').textContent = '(Good)';
+            
+            document.getElementById('resilient-score').textContent = '76%';
+            document.getElementById('sensitive-score').textContent = '24%';
+            document.getElementById('resilient-bar').style.width = '76%';
+            document.getElementById('sensitive-bar').style.width = '24%';
+            
+            document.getElementById('balance-score').textContent = '77%';
+            document.getElementById('balance-bar').style.width = '77%';
+            
+            document.getElementById('pressure-score').textContent = '69%';
+            document.getElementById('pressure-bar').style.width = '69%';
+            
+            document.getElementById('quick-score').textContent = '65%';
+            document.getElementById('gradual-score').textContent = '35%';
+            document.getElementById('quick-bar').style.width = '65%';
+            document.getElementById('gradual-bar').style.width = '35%';
+            
+            // Cultural
+            document.getElementById('cultural-score').textContent = '77%';
+            document.getElementById('cultural-bar').style.width = '77%';
+            document.getElementById('cultural-grade').textContent = '(Good)';
+            
+            document.getElementById('org-culture-score').textContent = '84%';
+            document.getElementById('org-culture-bar').style.width = '84%';
+            
+            document.getElementById('cultural-sensitivity-score').textContent = '66%';
+            document.getElementById('cultural-sensitivity-bar').style.width = '66%';
+            
+            document.getElementById('social-score').textContent = '83%';
+            document.getElementById('social-bar').style.width = '83%';
+            
+            document.getElementById('adaptable-score').textContent = '75%';
+            document.getElementById('traditional-score').textContent = '25%';
+            document.getElementById('adaptable-bar').style.width = '75%';
+            document.getElementById('traditional-bar').style.width = '25%';
+        }
+        
+        // Function to toggle subtraits visibility
+        function toggleSubtraits(id) {
+            const container = document.getElementById(`${id}-container`);
+            const items = document.getElementById(`${id}-items`);
+            const toggle = container.querySelector('.subtrait-toggle');
+            const toggleSpan = toggle.querySelector('span');
+            const toggleIcon = toggle.querySelector('svg');
+            
+            if (items.style.display === 'none') {
+                items.style.display = 'block';
+                toggleSpan.textContent = 'Hide Subtraits';
+                toggleIcon.innerHTML = '<polyline points="18 15 12 9 6 15"></polyline>';
+            } else {
+                items.style.display = 'none';
+                toggleSpan.textContent = 'Show Subtraits';
+                toggleIcon.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>';
+            }
+        }
+    </script>
+</body>
+</html>
